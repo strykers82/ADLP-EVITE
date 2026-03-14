@@ -629,7 +629,7 @@
   <div class="footer">
     <a href="https://www.adlpllc.com" target="_blank">www.adlpllc.com</a>
     <div class="footer-dot"></div>
-    <a href="/cdn-cgi/l/email-protection#9af3f4fcf5dafbfef6eaf6f6f9b4f9f5f7"><span class="__cf_email__" data-cfemail="9ef7f0f8f1defffaf2eef2f2fdb0fdf1f3">[email&#160;protected]</span></a>
+    <a href="mailto:info@adlpllc.com">info@adlpllc.com</a>
     <div class="footer-dot"></div>
     <span>623-203-3575</span>
   </div>
@@ -645,7 +645,7 @@
 
 <div class="copy-toast" id="copyToast">Link Copied! ✦</div>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+<script>
   let attending = null;
 
   function selectAttend(val) {
@@ -670,23 +670,34 @@
       return;
     }
 
-    // Build mailto to info@adlpllc.com
-    const subject = encodeURIComponent('RSVP: ADLP 3rd Annual Family Celebration');
-    const body = encodeURIComponent(
-      'Name: ' + firstName + ' ' + lastName + '\n' +
-      'Email: ' + email + '\n' +
-      'Phone: ' + (document.getElementById('phone').value || 'N/A') + '\n' +
-      'Guests: ' + guests + '\n' +
-      'Attending: ' + (attending === 'yes' ? 'YES' : 'NO') + '\n\n' +
-      'Event: ADLP 3rd Annual Family Celebration\n' +
-      'Date: Friday, March 27, 2026\n' +
-      'Location: Wildlife World Zoo & Aquarium'
-    );
-    window.location.href = 'mailto:info@adlpllc.com?subject=' + subject + '&body=' + body;
+    // Submit to Formspree
+    const formData = {
+      'First Name': firstName,
+      'Last Name': lastName,
+      'Email': email,
+      'Phone': document.getElementById('phone').value || 'N/A',
+      'Number of Guests': guests,
+      'Attending': attending === 'yes' ? 'YES - Will Attend' : 'NO - Unable to Attend',
+      '_subject': 'RSVP: ADLP 3rd Annual Family Celebration',
+      '_replyto': email
+    };
 
-    // Show success
-    document.getElementById('rsvpForm').style.display = 'none';
-    document.getElementById('rsvpSuccess').style.display = 'block';
+    fetch('https://formspree.io/f/xzdjvvkb', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify(formData)
+    })
+    .then(function(response) {
+      if (response.ok) {
+        document.getElementById('rsvpForm').style.display = 'none';
+        document.getElementById('rsvpSuccess').style.display = 'block';
+      } else {
+        alert('Something went wrong. Please try again or call 623-203-3575.');
+      }
+    })
+    .catch(function() {
+      alert('Something went wrong. Please try again or call 623-203-3575.');
+    });
   });
 
   function copyLink() {
@@ -727,4 +738,15 @@
       "You're invited to the ADLP 3rd Annual Family Celebration! 🦁\n" +
       "📅 March 27, 2026 | Wildlife World Zoo & Aquarium\n" +
       "Gates: 11AM | Lunch: 12PM\n" +
-      "RSVP: 623-203-3575 | info@
+      "RSVP: 623-203-3575 | info@adlpllc.com"
+    );
+    if (navigator.share) {
+      navigator.share({ title: 'ADLP Family Celebration', text: decodeURIComponent(msg) });
+    } else {
+      window.location.href = 'sms:?body=' + msg;
+    }
+  }
+</script>
+
+</body>
+</html>
