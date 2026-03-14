@@ -635,7 +635,11 @@
             </div>
             <input class="form-input" type="email" name="email" placeholder="Email Address" required>
             <input class="form-input" type="tel" name="phone" placeholder="Phone Number">
-            <input class="form-input" type="number" name="guests" placeholder="Number of Guests" min="1" max="20">
+            <div class="form-row">
+              <input class="form-input" type="number" name="babies" placeholder="Babies (0–2)" min="0" max="20">
+              <input class="form-input" type="number" name="children" placeholder="Children (3–12)" min="0" max="20">
+            </div>
+            <input class="form-input" type="number" name="adults" placeholder="Adults (13 & over)" min="0" max="20">
             <div class="attendance-btns">
               <button type="button" class="attend-btn" id="btnYes" onclick="selectAttend('yes')">✓ &nbsp; Attending</button>
               <button type="button" class="attend-btn" id="btnNo" onclick="selectAttend('no')">✗ &nbsp; Unable to Attend</button>
@@ -676,37 +680,35 @@
 <div class="copy-toast" id="copyToast">Link Copied! ✦</div>
 
 <script>
-  // Wrap in DOMContentLoaded so DOM is ready before any JS runs
+  // selectAttend must be global so onclick= can reach it
+  var attending = null;
+
+  function selectAttend(val) {
+    attending = val;
+    document.getElementById('attendanceField').value = val === 'yes' ? 'Yes - Will Attend' : 'No - Unable to Attend';
+
+    var btnYes = document.getElementById('btnYes');
+    var btnNo  = document.getElementById('btnNo');
+
+    [btnYes, btnNo].forEach(function(btn) {
+      btn.style.background = 'transparent';
+      btn.style.border = '1px solid rgba(226,201,126,0.45)';
+      btn.style.color = '#EDE8F5';
+      btn.style.fontWeight = 'normal';
+      btn.style.boxShadow = 'none';
+      btn.style.transform = 'none';
+    });
+
+    var chosen = val === 'yes' ? btnYes : btnNo;
+    chosen.style.background = 'linear-gradient(135deg, #A07828, #C9A84C)';
+    chosen.style.border = '2px solid #E2C97E';
+    chosen.style.color = '#2E2640';
+    chosen.style.fontWeight = '700';
+    chosen.style.boxShadow = '0 4px 16px rgba(201,168,76,0.6)';
+    chosen.style.transform = 'translateY(-1px)';
+  }
+
   document.addEventListener('DOMContentLoaded', function() {
-
-    var attending = null;
-
-    window.selectAttend = function(val) {
-      attending = val;
-      document.getElementById('attendanceField').value = val === 'yes' ? 'Yes - Will Attend' : 'No - Unable to Attend';
-
-      var btnYes = document.getElementById('btnYes');
-      var btnNo  = document.getElementById('btnNo');
-
-      // Reset both buttons
-      [btnYes, btnNo].forEach(function(btn) {
-        btn.style.background = 'transparent';
-        btn.style.border = '1px solid rgba(226,201,126,0.45)';
-        btn.style.color = '#EDE8F5';
-        btn.style.fontWeight = 'normal';
-        btn.style.boxShadow = 'none';
-        btn.style.transform = 'none';
-      });
-
-      // Highlight selected button
-      var chosen = val === 'yes' ? btnYes : btnNo;
-      chosen.style.background = 'linear-gradient(135deg, #A07828, #C9A84C)';
-      chosen.style.border = '2px solid #E2C97E';
-      chosen.style.color = '#2E2640';
-      chosen.style.fontWeight = '700';
-      chosen.style.boxShadow = '0 4px 16px rgba(201,168,76,0.6)';
-      chosen.style.transform = 'translateY(-1px)';
-    };
 
     document.getElementById('rsvpForm').addEventListener('submit', async function(e) {
       e.preventDefault();
@@ -731,7 +733,7 @@
       }
     });
 
-  }); // end DOMContentLoaded
+  });
 
   function copyLink() {
     navigator.clipboard.writeText(window.location.href).then(function() {
