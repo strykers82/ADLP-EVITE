@@ -373,10 +373,18 @@
     cursor: pointer;
     transition: all 0.3s;
   }
-  .attend-btn:hover, .attend-btn.selected {
-    background: rgba(201,168,76,0.2);
+  .attend-btn:not(.selected):hover {
+    background: rgba(201,168,76,0.15);
     border-color: var(--gold-mid);
     color: var(--gold-light);
+  }
+  .attend-btn.selected {
+    background: linear-gradient(135deg, var(--gold-deep), var(--gold-mid));
+    border-color: var(--gold-light);
+    color: #2E2640;
+    font-weight: 700;
+    box-shadow: 0 4px 16px rgba(201,168,76,0.5);
+    transform: translateY(-1px);
   }
   .rsvp-submit {
     padding: 14px 32px;
@@ -647,7 +655,7 @@
         <div class="footer">
           <a href="https://www.adlpllc.com" target="_blank">www.adlpllc.com</a>
           <div class="footer-dot"></div>
-          <a href="/cdn-cgi/l/email-protection#ef86818980af8e8b839f83838cc18c8082"><span class="__cf_email__" data-cfemail="3b52555d547b5a5f574b57575815585456">[email&#160;protected]</span></a>
+          <a href="mailto:info@adlpllc.com">info@adlpllc.com</a>
           <div class="footer-dot"></div>
           <span>623-203-3575</span>
         </div>
@@ -667,60 +675,106 @@
 
 <div class="copy-toast" id="copyToast">Link Copied! ✦</div>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
-  let attending = null;
+<script>
+  // Wrap in DOMContentLoaded so DOM is ready before any JS runs
+  document.addEventListener('DOMContentLoaded', function() {
 
-  function selectAttend(val) {
-    attending = val;
-    document.getElementById('attendanceField').value = val;
-    document.getElementById('btnYes').classList.toggle('selected', val === 'yes');
-    document.getElementById('btnNo').classList.toggle('selected', val === 'no');
-  }
+    var attending = null;
 
-  document.getElementById('rsvpForm').addEventListener('submit', async function(e) {
-    e.preventDefault();
-    const firstName = document.getElementById('rsvpForm').firstName.value.trim();
-    const lastName  = document.getElementById('rsvpForm').lastName.value.trim();
-    const email     = document.getElementById('rsvpForm').email.value.trim();
-    if (!firstName || !lastName || !email) { alert('Please fill in your name and email.'); return; }
-    if (!attending) { alert('Please indicate if you are attending.'); return; }
+    window.selectAttend = function(val) {
+      attending = val;
+      document.getElementById('attendanceField').value = val;
 
-    const form = e.target;
-    const data = new FormData(form);
-    try {
-      const res = await fetch(form.action, { method: 'POST', body: data, headers: { 'Accept': 'application/json' } });
-      if (res.ok) {
-        form.style.display = 'none';
-        document.getElementById('rsvpSuccess').classList.add('show');
-      } else {
+      var btnYes = document.getElementById('btnYes');
+      var btnNo  = document.getElementById('btnNo');
+
+      // Reset both buttons
+      [btnYes, btnNo].forEach(function(btn) {
+        btn.style.background = 'transparent';
+        btn.style.border = '1px solid rgba(226,201,126,0.45)';
+        btn.style.color = '#EDE8F5';
+        btn.style.fontWeight = 'normal';
+        btn.style.boxShadow = 'none';
+        btn.style.transform = 'none';
+      });
+
+      // Highlight selected button
+      var chosen = val === 'yes' ? btnYes : btnNo;
+      chosen.style.background = 'linear-gradient(135deg, #A07828, #C9A84C)';
+      chosen.style.border = '2px solid #E2C97E';
+      chosen.style.color = '#2E2640';
+      chosen.style.fontWeight = '700';
+      chosen.style.boxShadow = '0 4px 16px rgba(201,168,76,0.6)';
+      chosen.style.transform = 'translateY(-1px)';
+    };
+
+    document.getElementById('rsvpForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      var form = e.target;
+      var firstName = form.firstName.value.trim();
+      var lastName  = form.lastName.value.trim();
+      var email     = form.email.value.trim();
+      if (!firstName || !lastName || !email) { alert('Please fill in your name and email.'); return; }
+      if (!attending) { alert('Please indicate if you are attending.'); return; }
+
+      var data = new FormData(form);
+      try {
+        var res = await fetch(form.action, { method: 'POST', body: data, headers: { 'Accept': 'application/json' } });
+        if (res.ok) {
+          form.style.display = 'none';
+          document.getElementById('rsvpSuccess').classList.add('show');
+        } else {
+          alert('There was an issue submitting. Please try again.');
+        }
+      } catch(err) {
         alert('There was an issue submitting. Please try again.');
       }
-    } catch(err) {
-      alert('There was an issue submitting. Please try again.');
-    }
-  });
+    });
+
+  }); // end DOMContentLoaded
 
   function copyLink() {
     navigator.clipboard.writeText(window.location.href).then(function() {
-      const toast = document.getElementById('copyToast');
+      var toast = document.getElementById('copyToast');
       toast.classList.add('show');
       setTimeout(function() { toast.classList.remove('show'); }, 2500);
     });
   }
 
   function shareEmail() {
-    const subject = encodeURIComponent('You\'re Invited — ADLP 3rd Annual Family Celebration 🦁');
-    const body = encodeURIComponent(
-      'You are cordially invited to the ADLP 3rd Annual Family Celebration!\n\n' +
-      '📅 Friday, March 27, 2026\n' +
-      '📍 Wildlife World Zoo & Aquarium\n' +
-      '🕚 Gates Open: 11:00 AM\n' +
-      '🍽️ Lunch Provided: 12:00 PM\n\n' +
-      'RSVP by March 20, 2026\n' +
-      'Visit: ' + window.location.href
+    var subject = encodeURIComponent("You're Invited — ADLP 3rd Annual Family Celebration");
+    var body = encodeURIComponent(
+      "You are cordially invited to the ADLP 3rd Annual Family Celebration!\n\n" +
+      "📅 Friday, March 27, 2026\n" +
+      "📍 Wildlife World Zoo & Aquarium\n" +
+      "🕚 Gates Open: 11:00 AM\n" +
+      "🍽️ Lunch Provided: 12:00 PM\n\n" +
+      "RSVP by March 20, 2026\n" +
+      "Visit: " + window.location.href
     );
     window.location.href = 'mailto:?subject=' + subject + '&body=' + body;
   }
 
   function shareText() {
-   
+    var msg = encodeURIComponent(
+      "You're invited to the ADLP 3rd Annual Family Celebration! 🦁\n" +
+      "📅 March 27, 2026 | Wildlife World Zoo & Aquarium\n" +
+      "Gates: 11AM | Lunch: 12PM\n" +
+      "RSVP: " + window.location.href
+    );
+    if (navigator.share) {
+      navigator.share({ title: 'ADLP Family Celebration', text: decodeURIComponent(msg) });
+    } else {
+      window.location.href = 'sms:?body=' + msg;
+    }
+  }
+</script>E html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ADLP 3rd Annual Family Celebration</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Cinzel:wght@400;600;700&family=Sacramento&family=Lato:wght@300;400&display=swap" rel="stylesheet">
+
+</body>
+</html>
